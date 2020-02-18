@@ -25,14 +25,25 @@
         <v-container fluid>
           <v-row justify="start" align="start">
             <template v-if="activeResource.content.length">
-              <v-data-table
-                :headers="[activeResource.header]"
-                :items="activeResource.content"
-                :items-per-page="10"
-                item-key="name"
-                class="elevation-1"
-              ></v-data-table>
+              <v-col cols="12">
+                <v-data-table
+                  :headers="activeResource.headerKey"
+                  :items="activeResource.content"
+                  :items-per-page="10"
+                  class="elevation-1"
+                >
+                  <template v-slot:top>
+                    <v-toolbar flat>
+                      <v-toolbar-title
+                        >{{ activeResource.header }}
+                      </v-toolbar-title>
+                      <v-spacer></v-spacer>
+                    </v-toolbar>
+                  </template>
+                </v-data-table>
+              </v-col>
             </template>
+
             <template v-else>
               <h4>Please select a resource to fetch from the hamburger icon</h4>
             </template>
@@ -91,7 +102,12 @@ export default {
       const _resource = await this.$SWAPI.getSingleResource({ resource });
       this.activeResource.header = resource;
       this.activeResource.content = _resource.results;
-      this.activeResource.headerKey = _resource[0].name ? "Name" : "Title";
+      this.activeResource.headerKey = [
+        {
+          text: _resource.results[0].name ? "Name" : "Title",
+          value: _resource.results[0].name ? "name" : "title"
+        }
+      ];
       this.loading = false;
     },
     async getEndpoints() {
