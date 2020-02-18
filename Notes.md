@@ -13,3 +13,7 @@ Data for each top level domain is structured as a graph with each domain referen
 
 - Why isn't the endpoint embedded inside HTTPService instead of inside API service?
   - Placing the root endpoint inside HTTPService is ideal but it also limits the flexibility of HTTPService is more than a single root or service is needed. Alternatively, Each external resource could conceivably get an instance of HTTPService ... much nicer!!!
+
+## .env
+
+Normally a sensitive / security concern. However this .env only contains a single reference that points to a public endpoint
