@@ -1,51 +1,68 @@
 <template>
-  <v-app id="inspire">
-    <v-navigation-drawer v-model="drawer" class="deep-purple accent-4" clipped>
-      <v-list subheader>
-        <v-subheader>Resources</v-subheader>
-        <v-list-item-subtitle
-          >Please select a resource to view</v-list-item-subtitle
-        >
+  <div id="app">
+    <v-app id="inspire">
+      <v-navigation-drawer v-model="drawer" app right>
+        <v-list dense>
+          <template v-for="(resourceTitle, idx) in resourceTitles">
+            <v-list-item :key="`resourceTitle-${idx}`">
+              <v-list-item-content>
+                <v-list-item-title @click="getResource(resourceTitle)">{{
+                  resourceTitle
+                }}</v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+          </template>
+        </v-list>
+      </v-navigation-drawer>
 
-        <v-list-item v-for="resource in resources" :key="resource">
-          <h5 @click="getResource(resource)">{{ resource }}</h5>
-        </v-list-item>
-      </v-list>
-    </v-navigation-drawer>
-    <v-app-bar app clipped-left>
-      <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
-      <v-toolbar-title>SWAPI : The Force Awakens as an API!</v-toolbar-title>
-    </v-app-bar>
+      <v-app-bar app color="cyan" dark>
+        <v-spacer></v-spacer>
+        <v-toolbar-title>SWAPI</v-toolbar-title>
+        <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
+      </v-app-bar>
 
-    <v-content>
-      <v-container fluid>
-        <v-row>
-          <v-col cols="auto">
-            <h4>
-              Active resource:
-              {{
-                activeResource.header
-                  ? activeResource.header
-                  : "Please select a resource from left column"
-              }}
-            </h4>
-            <template v-if="activeResource.content">
-              <div
-                v-for="(resource, idx) in activeResource.content"
-                :key="`resource-${idx}`"
-              >
-                <h5>{{ resource.name || resource.title }}</h5>
-              </div>
+      <v-content>
+        <v-container fluid>
+          <v-row justify="start" align="start">
+            <template v-if="activeResource.content.length">
+              <v-data-table
+                :headers="[activeResource.header]"
+                :items="activeResource.content"
+                :items-per-page="10"
+                item-key="name"
+                class="elevation-1"
+              ></v-data-table>
             </template>
-          </v-col>
-        </v-row>
-      </v-container>
-    </v-content>
+            <template v-else>
+              <h4>Please select a resource to fetch from the hamburger icon</h4>
+            </template>
+            <!-- <v-simple-table>
+              <template v-slot:default>
+                <thead>
+                  <tr>
+                    <th class="text-left">Name | Title</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="(item, idx) in activeResource.content"
+                    :key="`item-${idx}`"
+                  >
+                    <td>{{ item.name || item.title }}</td>
+                  </tr>
+                </tbody>
+              </template>
+            </v-simple-table> -->
+          </v-row>
+        </v-container>
+      </v-content>
 
-    <v-footer app>
-      <span>Done by me</span>
-    </v-footer>
-  </v-app>
+      <v-footer color="cyan" app>
+        <v-spacer></v-spacer>
+        <span class="white--text">&copy; 2019</span>
+      </v-footer>
+    </v-app>
+  </div>
 </template>
 
 <script>
@@ -60,30 +77,43 @@ export default {
         return Object.keys(this.endpoints);
       }
       return [];
+    },
+    resourceTitles() {
+      if (this.endpoints) {
+        return Object.keys(this.endpoints);
+      }
+      return [];
     }
   },
   methods: {
     async getResource(resource) {
-      console.log("clickme ", resource);
+      this.loading = true;
       const _resource = await this.$SWAPI.getSingleResource({ resource });
-      debugger;
       this.activeResource.header = resource;
       this.activeResource.content = _resource.results;
-      console.log(_resource);
+      this.activeResource.headerKey = _resource[0].name ? "Name" : "Title";
+      this.loading = false;
+    },
+    async getEndpoints() {
+      return await this.$SWAPI.getAllResourceEndpoints();
     }
   },
   data: () => ({
     drawer: null,
     activeResource: {
       header: "",
+      headerkey: "",
       content: []
     },
-    endpoints: []
+    endpoints: [],
+    loading: false,
+    error: null
   }),
 
   async created() {
-    const _endpoints = await this.$SWAPI.getAllResourceEndpoints();
-    this.endpoints = _endpoints;
+    this.loading = true;
+    this.endpoints = await this.getEndpoints();
+    this.loading = false;
   }
 };
 </script>
@@ -92,8 +122,10 @@ export default {
   position: relative;
 }
 .panel {
-  height: 100vh;
-  max-width: 20rem;
-  position: fixed;
+  &__drawer {
+    min-height: 100vh;
+    max-width: 20rem;
+    position: fixed;
+  }
 }
 </style>
