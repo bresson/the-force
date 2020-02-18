@@ -31,6 +31,7 @@
                   :items="activeResource.content"
                   :items-per-page="10"
                   class="elevation-1"
+                  :server-items-length="activeResource.count"
                 >
                   <template v-slot:top>
                     <v-toolbar flat>
@@ -108,6 +109,9 @@ export default {
           value: _resource.results[0].name ? "name" : "title"
         }
       ];
+      this.activeResource.count = _resource.count;
+      this.activeResource.next = _resource.next;
+      this.activeResource.previous = _resource.previous;
       this.loading = false;
     },
     async getEndpoints() {
@@ -119,6 +123,9 @@ export default {
     activeResource: {
       header: "",
       headerkey: "",
+      count: null,
+      next: null,
+      previous: null,
       content: []
     },
     endpoints: [],
