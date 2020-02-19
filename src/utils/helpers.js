@@ -16,7 +16,7 @@ export class AsyncError extends Error {
         this.message = message;
       }
     } else {
-      this.message = `Network error ${errorCode} : Please contact Admin`;
+      this.message = `Error caught by Async Error : ${errorCode} : Please contact Admin`;
     }
   }
 }
@@ -32,7 +32,7 @@ export const tryCatch = ErrorHandler => async apiConnect => {
   try {
     return await apiConnect;
   } catch (error) {
-    console.error("ERROR ", error);
+    console.error("ERROR thrown inside tryCatch ", error);
     throw new ErrorHandler(error.response.status, error.response.data.detail);
   }
 };

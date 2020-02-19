@@ -6,9 +6,9 @@
           <template v-for="(resourceTitle, idx) in resourceTitles">
             <v-list-item :key="`resourceTitle-${idx}`">
               <v-list-item-content>
-                <v-list-item-title @click="getResource(resourceTitle)">{{
-                  resourceTitle
-                }}</v-list-item-title>
+                <v-list-item-title @click="getResource(resourceTitle)">
+                  {{ resourceTitle }}
+                </v-list-item-title>
               </v-list-item-content>
             </v-list-item>
           </template>
@@ -23,6 +23,26 @@
 
       <v-content>
         <v-container fluid>
+          <v-row>
+            <template v-if="schema.length">
+              <h4>Select a property to display more info!</h4>
+
+              <v-chip
+                class="mr-2"
+                v-for="prop in schema"
+                :key="prop"
+                @click="showProp(prop)"
+              >
+                <template>
+                  <v-icon left v-if="!activeResource.headerKey.includes(prop)"
+                    >mdi-plus</v-icon
+                  >
+                  <v-icon left v-else>mdi-close</v-icon>
+                </template>
+                {{ prop }}</v-chip
+              >
+            </template>
+          </v-row>
           <v-row justify="start" align="start">
             <template v-if="activeResource.content.length">
               <v-col cols="12">
@@ -35,12 +55,51 @@
                 >
                   <template v-slot:top>
                     <v-toolbar flat>
-                      <v-toolbar-title
-                        >{{ activeResource.header }}
-                      </v-toolbar-title>
+                      <v-toolbar-title>{{
+                        activeResource.header
+                      }}</v-toolbar-title>
                       <v-spacer></v-spacer>
                     </v-toolbar>
                   </template>
+
+                  <!-- <template v-slot:header="{ props: { headers } }">
+                    <thead>
+                      <tr>
+                        <th :colspan="headers.length">{{ headers.length }}</th>
+                      </tr>
+                    </thead>
+                  </template> -->
+
+                  <!-- <template v-slot:item.name="{ item }"> -->
+                  <!-- {{ item.name.toUpperCase() }} -->
+                  <!-- <tr v-for="index in item.items" :key="index">
+                      <td
+                        v-for="header in headers"
+                        class="text-left font-weight-black"
+                        :key="header"
+                      >{{ index[header.value]}}
+                      
+                      </td>
+                    </tr>
+                  </template>-->
+                  <!-- </template> -->
+
+                  <!-- <template v-slot:item="props">
+                    <tr v-for="index in props.items" :key="index">
+                      <td
+                        v-for="header in headers"
+                        class="text-left font-weight-black"
+                        :key="header"
+                      >{{ index[header.value]}}</td>
+                    </tr>
+                  </template>-->
+
+                  <!-- <template slot="items" slot-scope="props">
+                    <td v-for="header in headers" :key="header">{{ props.item[header.value] }}</td>
+                  </template>-->
+                  <!-- <template v-slot:item="props">
+                    <td v-for="head in header" :key="head">{{ myprops.item[header.value] }}</td>
+                  </template>-->
                 </v-data-table>
               </v-col>
             </template>
@@ -64,7 +123,7 @@
                   </tr>
                 </tbody>
               </template>
-            </v-simple-table> -->
+            </v-simple-table>-->
           </v-row>
         </v-container>
       </v-content>
@@ -81,6 +140,9 @@
 export default {
   props: {
     source: String
+  },
+  errorCaptured(err, component, details) {
+    alert("error captured ", err, component, details);
   },
   computed: {
     resources() {
@@ -106,28 +168,54 @@ export default {
       this.activeResource.headerKey = [
         {
           text: _resource.results[0].name ? "Name" : "Title",
-          value: _resource.results[0].name ? "name" : "title"
+          value: _resource.results[0].name ? "name" : "title",
+          sortable: false
         }
       ];
-      this.activeResource.count = _resource.count;
+      this.xtraDataCols = this.activeResource.count = _resource.count;
       this.activeResource.next = _resource.next;
       this.activeResource.previous = _resource.previous;
       this.loading = false;
+      const { required: schema } = await this.$SWAPI.getSingleResource({
+        resource: `${resource}/schema`
+      });
+      this.schema = schema.filter(
+        property => property !== "title" && property !== "name"
+      );
+      console.log(this.schema);
     },
     async getEndpoints() {
       return await this.$SWAPI.getAllResourceEndpoints();
+    },
+    async showProp(property) {
+      // this.$set(
+      //   this.activeResource.headerKey,
+      //   this.activeResource.headerKey.length,
+      //   {
+      //     text: property,
+      //     value: property,
+      //     sortable: false
+      //   }
+      // );
+      this.activeResource.headerKey.push({
+        text: property,
+        value: property,
+        sortable: false
+      });
     }
   },
   data: () => ({
     drawer: null,
     activeResource: {
       header: "",
-      headerkey: "",
+      headerKey: "",
       count: null,
       next: null,
       previous: null,
-      content: []
+      content: [],
+      haaders: []
     },
+    schema: [],
     endpoints: [],
     loading: false,
     error: null

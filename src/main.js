@@ -11,6 +11,26 @@ import { AsyncError, tryCatch } from "@/utils/helpers";
 
 Vue.config.productionTip = false;
 
+Vue.config.errorHandler = function(err, vm, info) {
+  console.log("errorHandler err ", err);
+  console.log("errorHandler vm ", vm);
+  console.log("errorHandler info ", info);
+  // handle error
+  // `info` is a Vue-specific error info, e.g. which lifecycle hook
+  // the error was found in. Only available in 2.2.0+
+};
+
+Vue.config.warnHandler = function(msg, vm, trace) {
+  // `trace` is the component hierarchy trace
+
+  console.log("warnHandler err ", msg);
+  console.log("warnHandler vm ", vm);
+  console.log("warnHandler trace ", trace);
+};
+
+// window.onerror = function(message, source, lineno, colno, error) { ... }
+// window.addEventListener("unhandledrejection", function(evt) { /*Your code*/ })
+
 /**
  * $SWAPI will be available throughout app
  * wihtout requiring import into each component
