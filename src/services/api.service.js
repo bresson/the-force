@@ -20,8 +20,13 @@ export const starWarsAPI = (rootEndpoint, HTTPService) => {
     return _resource;
   };
 
+  const sanityCheck = async () => {
+    return "OK";
+  };
+
   return {
     getAllResourceEndpoints,
-    getSingleResource
+    getSingleResource,
+    sanityCheck
   };
 };

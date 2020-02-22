@@ -6,9 +6,7 @@
           <template v-for="(resourceTitle, idx) in resourceTitles">
             <v-list-item :key="`resourceTitle-${idx}`">
               <v-list-item-content>
-                <v-list-item-title @click="getResource(resourceTitle)">
-                  {{ resourceTitle }}
-                </v-list-item-title>
+                <v-list-item-title @click="getResource(resourceTitle)">{{ resourceTitle }}</v-list-item-title>
               </v-list-item-content>
             </v-list-item>
           </template>
@@ -27,20 +25,13 @@
             <template v-if="schema.length">
               <h4>Select a property to display more info!</h4>
 
-              <v-chip
-                class="mr-2"
-                v-for="prop in schema"
-                :key="prop"
-                @click="showProp(prop)"
-              >
+              <v-chip class="mr-2" small v-for="prop in schema" :key="prop" @click="showProp(prop)">
                 <template>
-                  <v-icon left v-if="!activeResource.headerKey.includes(prop)"
-                    >mdi-plus</v-icon
-                  >
+                  <v-icon left v-if="!activeResource.headerKey.includes(prop)">mdi-plus</v-icon>
                   <v-icon left v-else>mdi-close</v-icon>
                 </template>
-                {{ prop }}</v-chip
-              >
+                {{ prop }}
+              </v-chip>
             </template>
           </v-row>
           <v-row justify="start" align="start">
@@ -55,9 +46,11 @@
                 >
                   <template v-slot:top>
                     <v-toolbar flat>
-                      <v-toolbar-title>{{
+                      <v-toolbar-title>
+                        {{
                         activeResource.header
-                      }}</v-toolbar-title>
+                        }}
+                      </v-toolbar-title>
                       <v-spacer></v-spacer>
                     </v-toolbar>
                   </template>
@@ -68,7 +61,7 @@
                         <th :colspan="headers.length">{{ headers.length }}</th>
                       </tr>
                     </thead>
-                  </template> -->
+                  </template>-->
 
                   <!-- <template v-slot:item.name="{ item }"> -->
                   <!-- {{ item.name.toUpperCase() }} -->
@@ -100,6 +93,15 @@
                   <!-- <template v-slot:item="props">
                     <td v-for="head in header" :key="head">{{ myprops.item[header.value] }}</td>
                   </template>-->
+
+                  <!-- 
+                    adapated from codepen
+                          <template v-slot:header.name="{ header }">
+        <td v-for="head in header" :key="head">{{ header.text.toUpperCase() }}</td>
+        
+      </template>
+      https://codepen.io/pen/?&editable=true&editors=101
+                  -->
                 </v-data-table>
               </v-col>
             </template>
@@ -127,7 +129,13 @@
           </v-row>
         </v-container>
       </v-content>
-
+      <async-wrapper url="https://dog.ceo/api/breed/husky/images">
+        <template v-slot:default="{ pending, error, data }">
+          <div v-if="pending">Loading ...</div>
+          <div v-else-if="error">{{ error }}</div>
+          <div v-else>{{ data }}</div>
+        </template>
+      </async-wrapper>
       <v-footer color="cyan" app>
         <v-spacer></v-spacer>
         <span class="white--text">&copy; 2019</span>
@@ -137,7 +145,13 @@
 </template>
 
 <script>
+import { sharedState } from "@/sharedState";
+import AsyncWrapper from "@/components/AsyncWrapper";
+
 export default {
+  components: {
+    AsyncWrapper
+  },
   props: {
     source: String
   },
@@ -205,6 +219,7 @@ export default {
     }
   },
   data: () => ({
+    async: sharedState,
     drawer: null,
     activeResource: {
       header: "",
