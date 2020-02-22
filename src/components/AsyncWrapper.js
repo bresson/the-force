@@ -1,10 +1,12 @@
 import Vue from "vue";
 // this._vm.$SAGA
+// CREDIT and adapted from https://dev.to/codinglukas/vue-js-pattern-for-async-requests-using-renderless-components-3gd#the-async-renderless-component
 
 export default Vue.component("async", {
   props: {
     url: { type: String, default: "", required: true },
-    params: { type: Object, default: () => ({}) }
+    params: { type: Object, default: () => ({}) },
+    api: String
   },
   data() {
     return {
@@ -14,25 +16,25 @@ export default Vue.component("async", {
     };
   },
   watch: {
-    url() {
+    api() {
       this.requestData();
-    },
-    params: {
-      handler() {
-        this.requestData();
-      },
-      deep: true
     }
+    // params: {
+    //   handler() {
+    //     this.requestData();
+    //   },
+    //   deep: true
+    // }
   },
-  mounted() {
-    this.requestData();
-  },
+  // mounted() {
+  //   this.requestData();
+  // },
   methods: {
     async requestData() {
       this.pending = true;
       console.log("from async wrapper ", this.pending);
       console.log("vm api ", this.$SWAPI);
-      this.data = await this.$SWAPI.sanityCheck();
+      this.data = await this.$SWAPI[this.api]();
 
       // try {
       //   const { data } = await axios.get(this.url, { params: this.params });

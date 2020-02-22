@@ -129,7 +129,14 @@
           </v-row>
         </v-container>
       </v-content>
-      <async-wrapper url="https://dog.ceo/api/breed/husky/images">
+      <async-notices>
+        <template v-slot:default="{ pending, error, success }">
+          <div v-if="pending">Loading ...</div>
+          <div v-else-if="error">{{ error, }}</div>
+          <div v-else>{{ success }}</div>
+        </template>
+      </async-notices>
+      <async-wrapper api="sanityCheck" url="https://dog.ceo/api/breed/husky/images">
         <template v-slot:default="{ pending, error, data }">
           <div v-if="pending">Loading ...</div>
           <div v-else-if="error">{{ error }}</div>
@@ -147,10 +154,12 @@
 <script>
 import { sharedState } from "@/sharedState";
 import AsyncWrapper from "@/components/AsyncWrapper";
+import AsyncNotices from "@/components/AsyncNotices";
 
 export default {
   components: {
-    AsyncWrapper
+    AsyncWrapper,
+    AsyncNotices
   },
   props: {
     source: String

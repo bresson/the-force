@@ -17,3 +17,9 @@ Data for each top level domain is structured as a graph with each domain referen
 ## .env
 
 Normally a sensitive / security concern. However this .env only contains a single reference that points to a public endpoint
+
+## Other approaches include scope slots a la
+
+https://dev.to/codinglukas/vue-js-pattern-for-async-requests-using-renderless-components-3gd#the-async-renderless-component
+
+However, that pattern on the surface is a top level component that consumes child components when architecturally that should not be the case
