@@ -22,7 +22,9 @@ Vue.config.errorHandler = function(err, vm, info) {
 
 Vue.config.warnHandler = function(msg, vm, trace) {
   // `trace` is the component hierarchy trace
-
+  /**
+   * throw or reconcile errors here
+   */
   console.log("warnHandler err ", msg);
   console.log("warnHandler vm ", vm);
   console.log("warnHandler trace ", trace);

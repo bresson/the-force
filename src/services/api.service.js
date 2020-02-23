@@ -1,5 +1,3 @@
-import axios from "axios";
-
 export const starWarsAPI = (rootEndpoint, HTTPService) => {
   console.log(HTTPService, rootEndpoint);
 
@@ -32,7 +30,7 @@ export const starWarsAPI = (rootEndpoint, HTTPService) => {
     const _head = await getSingleResource({ endpoint, resource });
     const _additional = Math.ceil(_head.count / perPageCount); // Int 6, 7, 8, etc
 
-    const _restPre = await axios.all(
+    const _restPre = await HTTPService.getAll(
       range(2, _additional).map(page =>
         getSingleResource({
           resource: `${resource}?page=${page}`

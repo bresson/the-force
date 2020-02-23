@@ -3,6 +3,7 @@
  * Use this to propagate errors to user views or logging
  * ** ADAPATION OF SCRIPT FOUND ONLINE AND USED IN SEVERAL OF MY PROJECTS
  */
+
 export class AsyncError extends Error {
   constructor(errorCode, message) {
     super(message);

@@ -20,12 +20,17 @@ const HTTPService = ($httpLib, tryCatch) => {
     );
   }
 
+  async function getAll(arrOfPromises) {
+    return await tryCatch($httpLib.all(arrOfPromises));
+  }
+
   function customRequest(data) {
     return tryCatch($httpLib(data));
   }
   return {
     sanityCheck,
     get,
+    getAll,
     customRequest
   };
 };

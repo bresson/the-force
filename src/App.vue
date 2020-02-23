@@ -129,20 +129,25 @@
           </v-row>
         </v-container>
       </v-content>
-      <async-notices>
+      <v-snackbar v-model="async" :multi-line="multiLine">
+        <template v-if="loading">"Loading"</template>
+        <template v-else-if="error">"Error"</template>
+        <template v-else-if="success">"Success!"</template>
+      </v-snackbar>
+      <!-- <async-notices>
         <template v-slot:default="{ pending, error, success }">
           <div v-if="pending">Loading ...</div>
           <div v-else-if="error">{{ error, }}</div>
           <div v-else>{{ success }}</div>
         </template>
-      </async-notices>
-      <async-wrapper api="sanityCheck" url="https://dog.ceo/api/breed/husky/images">
+      </async-notices>-->
+      <!-- <async-wrapper api="sanityCheck" url="https://dog.ceo/api/breed/husky/images">
         <template v-slot:default="{ pending, error, data }">
           <div v-if="pending">Loading ...</div>
           <div v-else-if="error">{{ error }}</div>
           <div v-else>{{ data }}</div>
         </template>
-      </async-wrapper>
+      </async-wrapper>-->
       <v-footer color="cyan" app>
         <v-spacer></v-spacer>
         <span class="white--text">&copy; 2019</span>
@@ -153,13 +158,13 @@
 
 <script>
 import { sharedState } from "@/sharedState";
-import AsyncWrapper from "@/components/AsyncWrapper";
-import AsyncNotices from "@/components/AsyncNotices";
+// import AsyncWrapper from "@/components/AsyncWrapper";
+// import AsyncNotices from "@/components/AsyncNotices";
 
 export default {
   components: {
-    AsyncWrapper,
-    AsyncNotices
+    // AsyncWrapper,
+    // AsyncNotices
   },
   props: {
     source: String
@@ -198,6 +203,25 @@ export default {
     }
   },
   methods: {
+    clearResource() {
+      const _template = {
+        activeResource: {
+          resource: "",
+          headerKey: "",
+          count: null,
+          next: null,
+          previous: null,
+          content: [],
+          headers: []
+        }
+      };
+      this.schema = [];
+      this.activeResource = Object.assign(
+        {},
+        this.activeResource,
+        _template.activeResource
+      );
+    },
     transformResources(resource) {
       this.activeResource.content = resource.reduce(
         (acc, { results }) => [...acc, ...results],
@@ -213,9 +237,11 @@ export default {
       this.loading = false;
     },
     async getAll(resource) {
+      this.loading = true;
       const _all = await this.$SWAPI.getAllPagesOfResource({
         resource
       });
+      this.clearResource();
       this.activeResource.resource = resource;
       this.transformResources(_all);
       const { required: schema } = await this.$SWAPI.getSingleResource({
@@ -224,6 +250,7 @@ export default {
       this.schema = schema.filter(
         property => property !== "title" && property !== "name"
       );
+      this.loading = false;
     },
     async getResource(resource) {
       this.loading = true;
@@ -257,16 +284,17 @@ export default {
       return await this.$SWAPI.getEveryResourceEndpoint();
     },
     async showProp(property) {
-      // this.$set(
-      //   this.activeResource.headerKey,
-      //   this.activeResource.headerKey.length,
-      //   {
-      //     text: property,
-      //     value: property,
-      //     sortable: false
-      //   }
-      // );
-      this.activeResource.headers.push(property);
+      const _propertyIndex = this.activeResource.headers.indexOf(property);
+      debugger;
+      if (_propertyIndex === -1) {
+        this.activeResource.headers.push(property);
+        this.message = `Added ${property}`;
+      } else {
+        this.activeResource.headers = [
+          ...this.activeResource.headers.slice(0, _propertyIndex),
+          ...this.activeResource.headers.slice(_propertyIndex + 1)
+        ];
+      }
     }
   },
   data: () => ({
