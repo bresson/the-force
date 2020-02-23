@@ -6,11 +6,12 @@
           <template v-for="(resourceTitle, idx) in resourceTitles">
             <v-list-item :key="`resourceTitle-${idx}`">
               <v-list-item-content>
-                <v-list-item-title @click="getResource(resourceTitle)">{{ resourceTitle }}</v-list-item-title>
+                <v-list-item-title @click="getAll(resourceTitle)">{{ resourceTitle }}</v-list-item-title>
               </v-list-item-content>
             </v-list-item>
           </template>
         </v-list>
+        <v-btn @click="getAll">get all</v-btn>
       </v-navigation-drawer>
 
       <v-app-bar app color="cyan" dark>
@@ -38,17 +39,16 @@
             <template v-if="activeResource.content.length">
               <v-col cols="12">
                 <v-data-table
-                  :headers="activeResource.headerKey"
+                  :headers="resourceHeaders"
                   :items="activeResource.content"
                   :items-per-page="10"
                   class="elevation-1"
-                  :server-items-length="activeResource.count"
                 >
                   <template v-slot:top>
                     <v-toolbar flat>
                       <v-toolbar-title>
                         {{
-                        activeResource.header
+                        activeResource.resource
                         }}
                       </v-toolbar-title>
                       <v-spacer></v-spacer>
@@ -180,21 +180,67 @@ export default {
         return Object.keys(this.endpoints);
       }
       return [];
+    },
+    resourceHeaders() {
+      if (this.activeResource.headers.length) {
+        return this.activeResource.headers.reduce((acc, elem) => {
+          return [
+            ...acc,
+            {
+              text: elem,
+              value: elem,
+              sortable: false
+            }
+          ];
+        }, []);
+      }
+      return [];
     }
   },
   methods: {
+    transformResources(resource) {
+      this.activeResource.content = resource.reduce(
+        (acc, { results }) => [...acc, ...results],
+        []
+      );
+      this.activeResource.headers.push(
+        this.activeResource.content[0].name ? "name" : "title"
+      );
+      this.activeResource.headers.push();
+      this.xtraDataCols = this.activeResource.count = resource[0].count;
+      // this.activeResource.next = resource.next;
+      // this.activeResource.previous = resource.previous;
+      this.loading = false;
+    },
+    async getAll(resource) {
+      const _all = await this.$SWAPI.getAllPagesOfResource({
+        resource
+      });
+      this.activeResource.resource = resource;
+      this.transformResources(_all);
+      const { required: schema } = await this.$SWAPI.getSingleResource({
+        resource: `${resource}/schema`
+      });
+      this.schema = schema.filter(
+        property => property !== "title" && property !== "name"
+      );
+    },
     async getResource(resource) {
       this.loading = true;
-      const _resource = await this.$SWAPI.getSingleResource({ resource });
-      this.activeResource.header = resource;
+      const _resource = await this.$SWAPI.getAllPagesOfResource({ resource });
+      this.activeResource.resource = resource;
       this.activeResource.content = _resource.results;
-      this.activeResource.headerKey = [
-        {
-          text: _resource.results[0].name ? "Name" : "Title",
-          value: _resource.results[0].name ? "name" : "title",
-          sortable: false
-        }
-      ];
+      this.activeResource.headers.push(
+        _resource.results[0].name ? "name" : "title"
+      );
+      // this.activeResource.headerKey = [
+      //   {
+      //     text: _resource.results[0].name ? "Name" : "Title",
+      //     value: _resource.results[0].name ? "name" : "title",
+      //     sortable: false
+      //   }
+      // ];
+      this.activeResource.headers.push();
       this.xtraDataCols = this.activeResource.count = _resource.count;
       this.activeResource.next = _resource.next;
       this.activeResource.previous = _resource.previous;
@@ -208,7 +254,7 @@ export default {
       console.log(this.schema);
     },
     async getEndpoints() {
-      return await this.$SWAPI.getAllResourceEndpoints();
+      return await this.$SWAPI.getEveryResourceEndpoint();
     },
     async showProp(property) {
       // this.$set(
@@ -220,24 +266,20 @@ export default {
       //     sortable: false
       //   }
       // );
-      this.activeResource.headerKey.push({
-        text: property,
-        value: property,
-        sortable: false
-      });
+      this.activeResource.headers.push(property);
     }
   },
   data: () => ({
     async: sharedState,
     drawer: null,
     activeResource: {
-      header: "",
+      resource: "",
       headerKey: "",
       count: null,
       next: null,
       previous: null,
       content: [],
-      haaders: []
+      headers: []
     },
     schema: [],
     endpoints: [],
