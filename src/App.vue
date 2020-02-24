@@ -25,10 +25,20 @@
           <v-row>
             <template v-if="schema.length">
               <h4>Select a property to display more info!</h4>
-
-              <v-chip class="mr-2" small v-for="prop in schema" :key="prop" @click="showProp(prop)">
+            </template>
+          </v-row>
+          <v-row>
+            <template v-if="schema.length" :isHeader="activeResource.headers.includes(prop)">
+              <v-chip
+                class="mr-2"
+                small
+                v-for="prop in schema"
+                :key="prop"
+                @click="showProp(prop)"
+                :color="`${activeResource.headers.includes(prop) ? 'blue' : 'orange'}`"
+              >
                 <template>
-                  <v-icon left v-if="!activeResource.headerKey.includes(prop)">mdi-plus</v-icon>
+                  <v-icon left v-if="!activeResource.headers.includes(prop)">mdi-plus</v-icon>
                   <v-icon left v-else>mdi-close</v-icon>
                 </template>
                 {{ prop }}
@@ -63,11 +73,9 @@
                         <!-- <th :colspan="headers.length">{{ headers.length }}</th> -->
                         <td v-for="head in headers" :key="head.text">
                           <v-text-field
-                            v-model="search"
+                            v-model="activeResource.search[head.text]"
                             append-icon="mdi-magnify"
                             label="Filter this column"
-                            @focus="isolateSearch(head.text)"
-                            @blue="removeIsolateSearch"
                           ></v-text-field>
                         </td>
                       </tr>
@@ -196,53 +204,28 @@ export default {
     },
     resourceHeaders() {
       if (this.activeResource.headers.length) {
-        // const _temp = this.activeResource.headers.reduce((acc, elem) => {
-        //   return [
-        //     ...acc,
-        //     {
-        //       text: elem,
-        //       value: elem,
-        //       sortable: false,
-        //       filterable: false
-        //     }
-        //   ];
-        // }, []);
-        // const _filterable = this.searchHeaders.reduce((acc, elem) => {
-        //   return {
-        //     text: elem,
-        //     value: elem,
-        //     sortable: false,
-        //     filterable: true
-        //   };
-        // }, {});
-        // return [Object.assign({}, _temp, _filterable);
-        // return _temp;
         return this.activeResource.headers.reduce((acc, elem) => {
-          if (
-            this.activeResource.searchHeaders &&
-            elem === this.activeResource.searchHeaders
-          ) {
-            debugger;
-            return [
-              ...acc,
-              {
-                text: elem,
-                value: elem,
-                sortable: false,
-                filterable: true
+          return [
+            ...acc,
+            {
+              text: elem,
+              value: elem,
+              sortable: false,
+              filter: value => {
+                if (!this.activeResource.search[elem]) return true;
+                console.log(
+                  "regex ",
+                  value,
+                  " -- ",
+                  this.activeResource.search[elem],
+                  RegExp(`${this.activeResource.search[elem]}`).test(value)
+                );
+                return RegExp(`${this.activeResource.search[elem]}`).test(
+                  value
+                );
               }
-            ];
-          } else {
-            return [
-              ...acc,
-              {
-                text: elem,
-                value: elem,
-                sortable: false,
-                filterable: false
-              }
-            ];
-          }
+            }
+          ];
         }, []);
       }
       return [];
@@ -300,6 +283,13 @@ export default {
       this.xtraDataCols = this.activeResource.count = resource[0].count;
       // this.activeResource.next = resource.next;
       // this.activeResource.previous = resource.previous;
+      this.activeResource.search = Object.assign(
+        {},
+        this.activeResource.search,
+        {
+          [this.activeResource.headers[0]]: ""
+        }
+      );
       this.loading = false;
     },
     async getAll(resource) {
@@ -374,6 +364,7 @@ export default {
       previous: null,
       content: [],
       headers: [],
+      search: {},
       searchHeaders: ""
     },
     schema: [],
