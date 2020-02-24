@@ -43,6 +43,7 @@
                   :items="activeResource.content"
                   :items-per-page="10"
                   class="elevation-1"
+                  :search="search"
                 >
                   <template v-slot:top>
                     <v-toolbar flat>
@@ -55,13 +56,23 @@
                     </v-toolbar>
                   </template>
 
-                  <!-- <template v-slot:header="{ props: { headers } }">
+                  <template v-slot:header="{ props: { headers } }">
                     <thead>
                       <tr>
-                        <th :colspan="headers.length">{{ headers.length }}</th>
+                        <!-- <td v-for="head in headers" :key="head.text">{{ head }}</td> -->
+                        <!-- <th :colspan="headers.length">{{ headers.length }}</th> -->
+                        <td v-for="head in headers" :key="head.text">
+                          <v-text-field
+                            v-model="search"
+                            append-icon="mdi-magnify"
+                            label="Filter this column"
+                            @focus="isolateSearch(head.text)"
+                            @blue="removeIsolateSearch"
+                          ></v-text-field>
+                        </td>
                       </tr>
                     </thead>
-                  </template>-->
+                  </template>
 
                   <!-- <template v-slot:item.name="{ item }"> -->
                   <!-- {{ item.name.toUpperCase() }} -->
@@ -94,13 +105,10 @@
                     <td v-for="head in header" :key="head">{{ myprops.item[header.value] }}</td>
                   </template>-->
 
-                  <!-- 
-                    adapated from codepen
-                          <template v-slot:header.name="{ header }">
-        <td v-for="head in header" :key="head">{{ header.text.toUpperCase() }}</td>
-        
-      </template>
-      https://codepen.io/pen/?&editable=true&editors=101
+                  <!-- <template v-slot:header="{ header }">
+                    <td v-for="head in header" :key="head">{{ head.text.toUpperCase() }}</td>
+                  </template>-->
+                  <!--   adapated from codepen https://codepen.io/pen/?&editable=true&editors=101
                   -->
                 </v-data-table>
               </v-col>
@@ -188,21 +196,79 @@ export default {
     },
     resourceHeaders() {
       if (this.activeResource.headers.length) {
+        // const _temp = this.activeResource.headers.reduce((acc, elem) => {
+        //   return [
+        //     ...acc,
+        //     {
+        //       text: elem,
+        //       value: elem,
+        //       sortable: false,
+        //       filterable: false
+        //     }
+        //   ];
+        // }, []);
+        // const _filterable = this.searchHeaders.reduce((acc, elem) => {
+        //   return {
+        //     text: elem,
+        //     value: elem,
+        //     sortable: false,
+        //     filterable: true
+        //   };
+        // }, {});
+        // return [Object.assign({}, _temp, _filterable);
+        // return _temp;
         return this.activeResource.headers.reduce((acc, elem) => {
-          return [
-            ...acc,
-            {
-              text: elem,
-              value: elem,
-              sortable: false
-            }
-          ];
+          if (
+            this.activeResource.searchHeaders &&
+            elem === this.activeResource.searchHeaders
+          ) {
+            debugger;
+            return [
+              ...acc,
+              {
+                text: elem,
+                value: elem,
+                sortable: false,
+                filterable: true
+              }
+            ];
+          } else {
+            return [
+              ...acc,
+              {
+                text: elem,
+                value: elem,
+                sortable: false,
+                filterable: false
+              }
+            ];
+          }
         }, []);
       }
       return [];
     }
   },
   methods: {
+    /**
+     * Please THROTTLE in production!!!
+     */
+    // searchColumn(property) {
+    //   console.log("property search col ", property);
+    //   this.activeResource.content.filter({property} => RegExp())
+    // },
+    isolateSearch(property) {
+      console.log("property ", property);
+      this.activeResource.searchHeaders = property;
+      // this.resourceHeaders = Object.assign({}, this.resourceHeaders, {
+      //   value: property,
+      //   text: property,
+      //   filterable: true,
+      //   sortable: false
+      // });
+    },
+    removeIsolateSearch() {
+      this.activeResource.searchHeaders = "";
+    },
     clearResource() {
       const _template = {
         activeResource: {
@@ -285,7 +351,6 @@ export default {
     },
     async showProp(property) {
       const _propertyIndex = this.activeResource.headers.indexOf(property);
-      debugger;
       if (_propertyIndex === -1) {
         this.activeResource.headers.push(property);
         this.message = `Added ${property}`;
@@ -298,6 +363,7 @@ export default {
     }
   },
   data: () => ({
+    search: "",
     async: sharedState,
     drawer: null,
     activeResource: {
@@ -307,7 +373,8 @@ export default {
       next: null,
       previous: null,
       content: [],
-      headers: []
+      headers: [],
+      searchHeaders: ""
     },
     schema: [],
     endpoints: [],
