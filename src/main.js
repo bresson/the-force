@@ -20,15 +20,15 @@ Vue.config.errorHandler = function(err, vm, info) {
   // the error was found in. Only available in 2.2.0+
 };
 
-Vue.config.warnHandler = function(msg, vm, trace) {
-  // `trace` is the component hierarchy trace
-  /**
-   * throw or reconcile errors here
-   */
-  console.log("warnHandler err ", msg);
-  console.log("warnHandler vm ", vm);
-  console.log("warnHandler trace ", trace);
-};
+// Vue.config.warnHandler = function(msg, vm, trace) {
+//   // `trace` is the component hierarchy trace
+//   /**
+//    * throw or reconcile errors here
+//    */
+//   console.error("warnHandler err ", msg);
+//   console.error("warnHandler vm ", vm);
+//   console.error("warnHandler trace ", trace);
+// };
 
 // window.onerror = function(message, source, lineno, colno, error) { ... }
 // window.addEventListener("unhandledrejection", function(evt) { /*Your code*/ })

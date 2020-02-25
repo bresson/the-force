@@ -1,3 +1,5 @@
+import { mutations } from "@/ObservableStore";
+
 /**
  * Top level catch for Promise based errors
  * Use this to propagate errors to user views or logging
@@ -33,6 +35,10 @@ export const tryCatch = ErrorHandler => async apiConnect => {
   try {
     return await apiConnect;
   } catch (error) {
+    mutations.reducer(
+      "error",
+      `SOS! Something went WRONG! ${error.response.data.detail}`
+    );
     console.error("ERROR thrown inside tryCatch ", error);
     throw new ErrorHandler(error.response.status, error.response.data.detail);
   }

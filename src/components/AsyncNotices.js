@@ -1,20 +1,26 @@
 import Vue from "vue";
+import sharedState from "@/sharedState";
 // this._vm.$SAGA
 // CREDIT and adapted from https://dev.to/codinglukas/vue-js-pattern-for-async-requests-using-renderless-components-3gd#the-async-renderless-component
 // ummmm.... this is really no different than any other component
 export default Vue.component("asyncnotices", {
-  props: {
-    status: Object
-  },
   data() {
     return {
-      pending: true,
-      error: false,
-      success: false
+      status: sharedState.state
     };
   },
+  created() {
+    // this.status = Object.assign({}, this.status, sharedState.state);
+  },
   watch: {
-    status() {}
+    sharedState() {
+      console.log("changed shared state");
+    },
+    status() {
+      console.log("changed status ", this.status);
+    }
+    // sharedState.state() {
+    // }
     // params: {
     //   handler() {
     //     this.requestData();
@@ -44,9 +50,7 @@ export default Vue.component("asyncnotices", {
   },
   render() {
     return this.$scopedSlots.default({
-      pending: this.pending,
-      error: this.error,
-      success: this.success
+      status
     });
   }
 });

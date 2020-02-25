@@ -145,18 +145,20 @@
           </v-row>
         </v-container>
       </v-content>
-      <v-snackbar v-model="async" :multi-line="multiLine">
+      <!-- <v-snackbar v-model="async" :multi-line="multiLine">
         <template v-if="loading">"Loading"</template>
         <template v-else-if="error">"Error"</template>
         <template v-else-if="success">"Success!"</template>
-      </v-snackbar>
-      <!-- <async-notices>
-        <template v-slot:default="{ pending, error, success }">
-          <div v-if="pending">Loading ...</div>
-          <div v-else-if="error">{{ error, }}</div>
-          <div v-else>{{ success }}</div>
+      </v-snackbar>-->
+      <async-notices>
+        <template v-slot:default="{ status }">
+          <div v-if="status.loading">Loading 123445...</div>
+          <div v-else-if="status.error">BAD ERROR</div>
+          <div v-else-if="status.success">GOOD SUCCESS</div>
         </template>
-      </async-notices>-->
+      </async-notices>
+      <async-toast></async-toast>
+
       <!-- <async-wrapper api="sanityCheck" url="https://dog.ceo/api/breed/husky/images">
         <template v-slot:default="{ pending, error, data }">
           <div v-if="pending">Loading ...</div>
@@ -173,14 +175,16 @@
 </template>
 
 <script>
-import { sharedState } from "@/sharedState";
+// import { store, mutations } from "@/ObservableStore";
 // import AsyncWrapper from "@/components/AsyncWrapper";
-// import AsyncNotices from "@/components/AsyncNotices";
+import AsyncNotices from "@/components/AsyncNotices";
+import AsyncToast from "@/components/AsyncToast";
 
 export default {
   components: {
     // AsyncWrapper,
-    // AsyncNotices
+    AsyncNotices,
+    AsyncToast
   },
   props: {
     source: String
@@ -354,7 +358,7 @@ export default {
   },
   data: () => ({
     search: "",
-    async: sharedState,
+    // async: sharedState,
     drawer: null,
     activeResource: {
       resource: "",

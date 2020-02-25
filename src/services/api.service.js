@@ -1,10 +1,15 @@
+import { store, mutations } from "@/ObservableStore";
+
 export const starWarsAPI = (rootEndpoint, HTTPService) => {
   console.log(HTTPService, rootEndpoint);
+  console.log("store ", store);
 
   const getEveryResourceEndpoint = async ({ endpoint = rootEndpoint } = {}) => {
+    mutations.reducer("loading", true);
     const { data: _endpoints } = await HTTPService.get({
       endpoint
     });
+    mutations.reducer("success", true);
     return _endpoints;
   };
 
@@ -13,10 +18,12 @@ export const starWarsAPI = (rootEndpoint, HTTPService) => {
     resource
   } = {}) => {
     console.log("getSingleResource ", endpoint, " ", resource);
+    mutations.reducer("pending", true);
     const { data: results } = await HTTPService.get({
       endpoint,
       resource
     });
+    mutations.reducer("success", true);
     return results;
   };
 
@@ -24,6 +31,7 @@ export const starWarsAPI = (rootEndpoint, HTTPService) => {
     endpoint = rootEndpoint,
     resource
   }) => {
+    mutations.reducer("loading", true);
     console.log("getting all pages from an asset ");
     /** Based on API & schema. Better */
     const perPageCount = 10;
@@ -44,6 +52,7 @@ export const starWarsAPI = (rootEndpoint, HTTPService) => {
     }, []);
 
     console.log("combo ", [_head, ..._rest]);
+    mutations.reducer("success", true);
     return [_head, ..._rest];
   };
 
